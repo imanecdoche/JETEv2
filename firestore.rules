@@ -1,0 +1,87 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9\\-_]+$');
+    }
+    function incoming() { return request.resource.data; }
+    function existing() { return resource.data; }
+    function isSignedIn() { return request.auth != null; }
+    function isOwner(data) { return isSignedIn() && data.ownerId == request.auth.uid; }
+
+    function isValidUser(data) {
+      return data.keys().hasAll(['name', 'active', 'role', 'ownerId'])
+        && data.name is string && data.name.size() > 0 && data.name.size() <= 100
+        && data.active is bool
+        && data.role is string && data.role.size() <= 50
+        && data.ownerId == request.auth.uid;
+    }
+
+    function isValidTransaction(data) {
+      return data.keys().hasAll(['userId', 'type', 'qty', 'gram', 'price', 'customerName', 'date', 'timestamp', 'ownerId'])
+        && data.userId is string && data.userId.size() > 0
+        && data.type is string && data.type.size() > 0
+        && data.price is number
+        && data.ownerId == request.auth.uid;
+    }
+
+    function isValidTransactionSummary(data) {
+      return data.keys().hasAll(['date', 'source', 'categories', 'totalTransactions', 'createdBy', 'timestamp', 'ownerId'])
+        && data.ownerId == request.auth.uid;
+    }
+
+    function isValidTarget(data) {
+       return data.keys().hasAll(['daily', 'weekly', 'monthly', 'ownerId'])
+         && data.ownerId == request.auth.uid;
+    }
+
+    function isValidLmTransaction(data) {
+      return data.keys().hasAll(['type', 'customerName', 'customerPhone', 'date', 'timestamp', 'ownerId', 'items', 'totalGram', 'totalPrice'])
+        && data.type is string
+        && data.customerName is string
+        && data.ownerId == request.auth.uid;
+    }
+
+    match /users/{userId} {
+      allow get: if isSignedIn() && (resource == null || resource.data.ownerId == request.auth.uid);
+      allow list: if isSignedIn() && resource.data.ownerId == request.auth.uid;
+      allow create: if isSignedIn() && isValidUser(incoming());
+      allow update: if isSignedIn() && isOwner(existing()) && isValidUser(incoming());
+      allow delete: if isSignedIn() && isOwner(existing());
+    }
+
+    match /transactions/{transactionId} {
+      allow get: if isSignedIn() && (resource == null || resource.data.ownerId == request.auth.uid);
+      allow list: if isSignedIn() && resource.data.ownerId == request.auth.uid;
+      allow create: if isSignedIn() && isValidTransaction(incoming());
+      allow update: if isSignedIn() && isOwner(existing()) && isValidTransaction(incoming());
+      allow delete: if isSignedIn() && isOwner(existing());
+    }
+    
+    match /transaction_summaries/{summaryId} {
+      allow get: if isSignedIn() && (resource == null || resource.data.ownerId == request.auth.uid);
+      allow list: if isSignedIn() && resource.data.ownerId == request.auth.uid;
+      allow create: if isSignedIn() && isValidTransactionSummary(incoming());
+      allow update: if isSignedIn() && isOwner(existing()) && isValidTransactionSummary(incoming());
+      allow delete: if isSignedIn() && isOwner(existing());
+    }
+
+    match /lm_transactions/{transactionId} {
+      allow get: if isSignedIn() && (resource == null || resource.data.ownerId == request.auth.uid);
+      allow list: if isSignedIn() && resource.data.ownerId == request.auth.uid;
+      allow create: if isSignedIn() && isValidLmTransaction(incoming());
+      allow update: if isSignedIn() && isOwner(existing()) && isValidLmTransaction(incoming());
+      allow delete: if isSignedIn() && isOwner(existing());
+    }
+
+    match /settings/{settingId} {
+       allow get: if isSignedIn() && (resource == null || settingId == "app_targets_" + request.auth.uid);
+       allow list: if false;
+       allow write: if isSignedIn() && isValidTarget(incoming());
+    }
+  }
+}

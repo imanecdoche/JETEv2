@@ -1,0 +1,108 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "Store employees that use the application",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "active": { "type": "boolean" },
+        "role": { "type": "string" }
+      },
+      "required": ["name", "active", "role"]
+    },
+    "Category": {
+      "title": "Category",
+      "description": "Transaction category types",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "type": { "type": "string" }
+      },
+      "required": ["name", "type"]
+    },
+    "Transaction": {
+      "title": "Transaction",
+      "description": "Individual sales / activity record",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "type": { "type": "string" },
+        "qty": { "type": "number" },
+        "gram": { "type": "number" },
+        "price": { "type": "number" },
+        "customerName": { "type": "string" },
+        "notes": { "type": "string" },
+        "date": { "type": "string" },
+        "timestamp": { "type": "number" },
+        "updatedAt": { "type": "number" },
+        "sellQty": { "type": "number" },
+        "sellGram": { "type": "number" },
+        "sellPrice": { "type": "number" },
+        "itemsData": { "type": "string" },
+        "sellItemsData": { "type": "string" }
+      },
+      "required": ["userId", "type", "qty", "gram", "price", "customerName", "date", "timestamp"]
+    },
+    "DailySummary": {
+      "title": "DailySummary",
+      "description": "Aggregated daily stats per user",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "date": { "type": "string" },
+        "totalTransactions": { "type": "number" },
+        "totalGrams": { "type": "number" },
+        "totalPrice": { "type": "number" },
+        "statsByCategory": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+             "properties": {
+               "qty": { "type": "number" },
+               "gram": { "type": "number" },
+               "price": { "type": "number" }
+             }
+          }
+        }
+      },
+      "required": ["userId", "date", "totalTransactions", "totalGrams", "totalPrice", "statsByCategory"]
+    },
+    "TransactionSummary": {
+      "title": "TransactionSummary",
+      "description": "Manually added historical summary",
+      "type": "object",
+      "properties": {
+        "date": { "type": "string" },
+        "source": { "type": "string" },
+        "categories": { "type": "object" },
+        "totalTransactions": { "type": "number" },
+        "createdBy": { "type": "string" },
+        "timestamp": { "type": "number" }
+      },
+      "required": ["date", "source", "categories", "totalTransactions", "createdBy", "timestamp"]
+    }
+  },
+  "firestore": {
+    "users/{userId}": {
+      "schema": { "$ref": "#/entities/User" },
+      "description": "Employees"
+    },
+    "categories/{categoryId}": {
+      "schema": { "$ref": "#/entities/Category" },
+      "description": "Allowed categories"
+    },
+    "transactions/{transactionId}": {
+      "schema": { "$ref": "#/entities/Transaction" },
+      "description": "List of all transactions"
+    },
+    "dailySummaries/{summaryId}": {
+      "schema": { "$ref": "#/entities/DailySummary" },
+      "description": "Daily Rollups"
+    },
+    "transaction_summaries/{summaryId}": {
+      "schema": { "$ref": "#/entities/TransactionSummary" },
+      "description": "Manually added historical transaction summaries"
+    }
+  }
+}

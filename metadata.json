@@ -1,0 +1,8 @@
+{
+  "name": "Remix: JewelTrack",
+  "description": "Mobile-first jewelry store sales performance tracking for staff.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
