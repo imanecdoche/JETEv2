@@ -1,15 +1,16 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAnalytics, TimeFilter } from '../hooks/useAnalytics';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useApp } from '../contexts/AppContext';
 import { useDialog } from '../contexts/DialogContext';
 import { exportCSV } from '../utils/analytics';
+import { ReportModal } from '../components/ReportModal';
 import { 
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer,
   PieChart as RechartsPieChart, Pie, Cell, BarChart, Bar, Legend
 } from 'recharts';
-import { Download, Calendar, Activity, BarChart2, TrendingUp, Users, PieChart as PieChartIcon } from 'lucide-react';
+import { Download, Calendar, Activity, BarChart2, TrendingUp, Users, PieChart as PieChartIcon, FileDown } from 'lucide-react';
 
 const COLORS = ['#b68c5b', '#4ade80', '#3b82f6', '#a855f7', '#f43f5e', '#f59e0b'];
 
@@ -17,6 +18,7 @@ export default function Analytics() {
   const { t } = useLanguage();
   const { currentUser } = useApp();
   const { alert } = useDialog();
+  const [isReportModalOpen, setIsReportModalOpen] = useState(false);
   const {
     timeFilter, setTimeFilter, startDate, setStartDate, endDate, setEndDate,
     filteredTransactions, summary, categoryDistribution, trendData
@@ -55,6 +57,12 @@ export default function Analytics() {
           >
             <Calendar size={16} /> <span className="hidden sm:inline">Add Past Data</span>
           </Link>
+          <button 
+            onClick={() => setIsReportModalOpen(true)}
+            className="flex items-center justify-center gap-2 px-4 h-10 rounded-xl bg-[#b68c5b] text-white font-medium text-sm hover:bg-[#b68c5b]/90 transition-colors shadow-sm active:scale-95 whitespace-nowrap"
+          >
+            <FileDown size={16} /> <span>Laporan PDF</span>
+          </button>
           <button 
             onClick={handleExport}
             className="flex items-center justify-center gap-2 px-4 h-10 rounded-xl bg-white border border-gray-200 text-gray-700 font-medium text-sm hover:bg-gray-50 transition-colors shadow-sm active:scale-95 whitespace-nowrap"
@@ -250,6 +258,8 @@ export default function Analytics() {
         </div>
 
       </div>
+
+      <ReportModal isOpen={isReportModalOpen} onClose={() => setIsReportModalOpen(false)} />
     </div>
   );
 }
