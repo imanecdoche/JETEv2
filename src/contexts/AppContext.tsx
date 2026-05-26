@@ -2,11 +2,19 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { auth, isFirebasePlaceholder } from '../firebase';
 import { onAuthStateChanged, User as FirebaseUser, signOut } from 'firebase/auth';
 
-interface Employee {
+export interface Employee {
   id: string;
   name: string;
   role: string;
   email?: string;
+  phone?: string;
+  photoUrl?: string;
+  dob?: string;
+  gender?: string;
+  address?: string;
+  emergencyContact?: string;
+  identityNo?: string;
+  npwp?: string;
 }
 
 export type AdaptMode = 'auto' | 'portrait' | 'landscape';

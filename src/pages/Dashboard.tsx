@@ -5,6 +5,7 @@ import { NavLink } from 'react-router-dom';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useStorage } from '../contexts/StorageContext';
 import { HeaderClock } from '../components/HeaderClock';
+import { LoadingScreen } from '../components/LoadingScreen';
 import { motion, AnimatePresence } from 'motion/react';
 import { Target, TrendingUp, Trophy, Flame, Zap } from 'lucide-react';
 
@@ -199,7 +200,7 @@ const MultiLayerProgressBar: React.FC<ProgressBarProps> = ({
                 zIndex: index + 1,
               }}
             >
-              <div className="absolute inset-0 animate-barber-pole opacity-35" />
+              <div className="absolute inset-0 animate-barber-pole opacity-55" />
             </motion.div>
           );
         })}
@@ -441,7 +442,7 @@ export default function Dashboard() {
   };
 
   if (loading) {
-    return <div className="p-6 text-center text-gray-400 font-serif translate-y-1/2 h-full flex flex-col justify-center">{t('loading')}</div>;
+    return <LoadingScreen message="Fetching data..." />;
   }
 
   return (

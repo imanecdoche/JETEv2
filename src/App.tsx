@@ -14,7 +14,9 @@ import Analytics from './pages/Analytics';
 import AddPastData from './pages/AddPastData';
 import LMTransactions from './pages/LMTransactions';
 import AddLM from './pages/AddLM';
+import AccountDetail from './pages/AccountDetail';
 import BottomNav from './components/BottomNav';
+import { LoadingScreen } from './components/LoadingScreen';
 
 function AnimatedPage({ children }: { children: React.ReactNode }) {
   return (
@@ -37,14 +39,14 @@ function AuthWrapper() {
   const location = useLocation();
   
   if (!isReady) {
-    return null; // Or a nice splash screen
+    return <LoadingScreen message="Fetching data..." />;
   }
 
   if (!currentUser) {
     return <LoginScreen />;
   }
 
-  const hideNavbarPaths = ['/add', '/edit', '/lm/add', '/lm/edit'];
+  const hideNavbarPaths = ['/add', '/edit', '/lm/add', '/lm/edit', '/account'];
   const shouldHideNavbar = hideNavbarPaths.some(path => location.pathname.startsWith(path) && location.pathname !== '/add-past');
 
   return (
@@ -64,6 +66,7 @@ function AuthWrapper() {
               <Route path="/lm/add" element={<AnimatedPage><AddLM /></AnimatedPage>} />
               <Route path="/lm/edit/:id" element={<AnimatedPage><AddLM /></AnimatedPage>} />
               <Route path="/settings" element={<AnimatedPage><Settings /></AnimatedPage>} />
+              <Route path="/account" element={<AnimatedPage><AccountDetail /></AnimatedPage>} />
               <Route path="*" element={<Navigate to="/" replace />} />
             </RoutesWithKey>
           </AnimatePresence>

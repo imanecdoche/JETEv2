@@ -5,6 +5,7 @@ import { format, parseISO } from 'date-fns';
 import { ChevronLeft, Trash2, Edit3 } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useStorage } from '../contexts/StorageContext';
+import { LoadingScreen } from '../components/LoadingScreen';
 
 const CATEGORIES: Record<string, { label: string, color: string }> = {
   sell: { label: 'cat_sell', color: 'bg-emerald-50 text-emerald-700 border-emerald-100' },
@@ -59,7 +60,7 @@ export default function CategoryDetail() {
   };
 
   if (loading) {
-    return <div className="p-6 text-center text-gray-400 font-serif translate-y-1/2 h-full flex flex-col justify-center">{t('loading')}</div>;
+    return <LoadingScreen message="Fetching data..." />;
   }
 
   return (

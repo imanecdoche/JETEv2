@@ -3,9 +3,10 @@ import { useApp } from '../contexts/AppContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useStorage } from '../contexts/StorageContext';
 import { useDialog } from '../contexts/DialogContext';
-import { User, LogOut, ShieldCheck, ShieldAlert, Plus, X, MonitorSmartphone, Database, Cloud, Tablet, Smartphone, Download, Upload, Trash2, Key, Target, AlertTriangle, RefreshCw } from 'lucide-react';
+import { User, LogOut, ShieldCheck, ShieldAlert, Plus, X, MonitorSmartphone, Database, Cloud, Tablet, Smartphone, Download, Upload, Trash2, Key, Target, AlertTriangle, RefreshCw, ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { getDaysInMonth } from 'date-fns';
+import { LoadingScreen } from '../components/LoadingScreen';
 
 export default function Settings() {
   const { currentUser, setCurrentUser, adaptMode, setAdaptMode, logout, firebaseUser } = useApp();
@@ -179,7 +180,7 @@ export default function Settings() {
   ];
 
   if (loading) {
-    return <div className="p-12 text-center text-gray-400 font-serif">{t('loading')}</div>;
+    return <LoadingScreen message="Fetching data..." />;
   }
 
   return (
@@ -190,6 +191,50 @@ export default function Settings() {
       </header>
 
       <div className="space-y-6 pb-20">
+        {/* ACCOUNT - Clickable Profile Card */}
+        <section>
+          <h2 className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-4 ml-1">ACCOUNT</h2>
+          <div 
+            onClick={() => navigate('/account')}
+            className="bg-white rounded-[24px] p-5 shadow-sm border border-gray-100 flex items-center justify-between cursor-pointer hover:shadow-md hover:border-gray-200 active:scale-[0.99] transition-all animate-in fade-in zoom-in-95 duration-200"
+          >
+            <div className="flex items-center gap-4">
+              {currentUser?.photoUrl ? (
+                <img 
+                  src={currentUser.photoUrl} 
+                  alt={currentUser.name} 
+                  referrerPolicy="no-referrer"
+                  className="w-12 h-12 rounded-full object-cover border-2 border-white shadow-sm shrink-0"
+                />
+              ) : (
+                <div className="w-12 h-12 rounded-full bg-[#b68c5b]/10 flex items-center justify-center text-[#b68c5b] text-base font-serif font-semibold shrink-0">
+                  {currentUser?.name ? currentUser.name.substring(0, 2).toUpperCase() : 'US'}
+                </div>
+              )}
+              <div className="text-left">
+                <p className="font-semibold text-gray-800">{currentUser?.name || firebaseUser?.email || 'User'}</p>
+                <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">{currentUser?.role || 'Owner'}</p>
+                <p className="text-xs text-gray-400 truncate max-w-[160px] sm:max-w-none">{currentUser?.email || firebaseUser?.email}</p>
+              </div>
+            </div>
+            
+            <div className="flex items-center gap-2">
+              <button 
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleLogout();
+                }}
+                className="w-9 h-9 rounded-full flex items-center justify-center text-gray-450 hover:text-red-500 hover:bg-red-50 transition-all border border-gray-100 mr-1"
+                title={t('switchAccount')}
+              >
+                <LogOut size={16} />
+              </button>
+              <ChevronRight size={18} className="text-gray-300" />
+            </div>
+          </div>
+        </section>
+
         <section>
           <div className="flex items-center justify-between mb-4 ml-1">
             <h2 className="text-xs font-bold uppercase tracking-widest text-gray-400">Sales Targets (Gram)</h2>
@@ -268,27 +313,6 @@ export default function Settings() {
                 </p>
               </div>
             </div>
-          </div>
-        </section>
-
-        <section>
-          <h2 className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-4 ml-1">{t('currentAccount')}</h2>
-          <div className="bg-white rounded-[24px] p-5 shadow-sm border border-gray-100 flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-full bg-[#b68c5b]/10 flex items-center justify-center text-[#b68c5b]">
-                <User size={24} />
-              </div>
-              <div>
-                <p className="font-semibold text-gray-800">{currentUser?.name || firebaseUser?.email || 'User'}</p>
-                <p className="text-xs text-gray-400 uppercase tracking-wider">{firebaseUser?.email}</p>
-              </div>
-            </div>
-            <button 
-              onClick={handleLogout}
-              className="w-10 h-10 rounded-full flex items-center justify-center text-gray-400 hover:text-red-500 hover:bg-red-50 transition-all border border-gray-50"
-            >
-              <LogOut size={20} />
-            </button>
           </div>
         </section>
 
