@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { auth, db } from '../firebase';
 
 type Language = 'en' | 'id' | 'es' | 'zh' | 'tl';
 
@@ -94,6 +95,7 @@ export const translations: Translations = {
   cat_reviews: { en: 'Reviews', id: 'Ulasan', es: 'Reseñas', zh: '评论', tl: 'Mga Review' },
   cat_services: { en: 'Services', id: 'Layanan', es: 'Layanan', zh: '服务', tl: 'Mga Serbisyo' },
   cat_cnn: { en: 'CNN', id: 'CNN', es: 'CNN', zh: 'CNN', tl: 'CNN' },
+  cat_lm: { en: 'Antam / LM', id: 'Antam / LM', es: 'Antam / LM', zh: 'Antam / LM', tl: 'Antam / LM' },
 };
 
 interface LanguageContextType {
@@ -111,6 +113,20 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     localStorage.setItem('app_language', language);
+    
+    // Auto-sync configuration with user cloud document
+    const syncCloudLanguage = async () => {
+      const user = auth.currentUser;
+      if (user && db) {
+        try {
+          const { doc, setDoc } = await import('firebase/firestore');
+          await setDoc(doc(db, 'users', user.uid), { language }, { merge: true });
+        } catch (e) {
+          console.warn('Language cloud sync omitted or pending:', e);
+        }
+      }
+    };
+    syncCloudLanguage();
   }, [language]);
 
   const t = (key: string) => {

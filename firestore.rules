@@ -18,7 +18,21 @@ service cloud.firestore {
         && data.name is string && data.name.size() > 0 && data.name.size() <= 100
         && data.active is bool
         && data.role is string && data.role.size() <= 50
-        && data.ownerId == request.auth.uid;
+        && data.ownerId == request.auth.uid
+        && (!data.keys().contains('email') || data.email is string)
+        && (!data.keys().contains('phone') || data.phone is string)
+        && (!data.keys().contains('photoUrl') || data.photoUrl is string)
+        && (!data.keys().contains('dob') || data.dob is string)
+        && (!data.keys().contains('gender') || data.gender is string)
+        && (!data.keys().contains('address') || data.address is string)
+        && (!data.keys().contains('emergencyContact') || data.emergencyContact is string)
+        && (!data.keys().contains('identityNo') || data.identityNo is string)
+        && (!data.keys().contains('npwp') || data.npwp is string)
+        && (!data.keys().contains('targets') || data.targets is map)
+        && (!data.keys().contains('language') || data.language is string)
+        && (!data.keys().contains('adaptMode') || data.adaptMode is string)
+        && (!data.keys().contains('sessionActiveId') || data.sessionActiveId is string)
+        && (!data.keys().contains('sessionLastActive') || data.sessionLastActive is number);
     }
 
     function isValidTransaction(data) {
@@ -47,11 +61,7 @@ service cloud.firestore {
     }
 
     match /users/{userId} {
-      allow get: if isSignedIn() && (resource == null || resource.data.ownerId == request.auth.uid);
-      allow list: if isSignedIn() && resource.data.ownerId == request.auth.uid;
-      allow create: if isSignedIn() && isValidUser(incoming());
-      allow update: if isSignedIn() && isOwner(existing()) && isValidUser(incoming());
-      allow delete: if isSignedIn() && isOwner(existing());
+      allow read, write: if isSignedIn() && request.auth.uid == userId;
     }
 
     match /transactions/{transactionId} {

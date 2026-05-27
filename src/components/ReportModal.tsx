@@ -12,6 +12,7 @@ import { useApp } from '../contexts/AppContext';
 import { useStorage } from '../contexts/StorageContext';
 import { useDialog } from '../contexts/DialogContext';
 import { jsPDF } from 'jspdf';
+import Rupiah, { formatRupiahString } from './Rupiah';
 
 interface ReportModalProps {
   isOpen: boolean;
@@ -173,7 +174,7 @@ export function ReportModal({ isOpen, onClose }: ReportModalProps) {
   }, [transactions, period, selectedDate, selectedMonth, selectedYear, startDate, endDate]);
 
   const formatRupiah = (num: number) => {
-    return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(num);
+    return formatRupiahString(num);
   };
 
   const generatePDF = () => {
@@ -663,19 +664,19 @@ export function ReportModal({ isOpen, onClose }: ReportModalProps) {
                   <div className="bg-emerald-50 rounded-xl p-3 border border-emerald-100 text-center">
                     <span className="text-[9px] text-emerald-600 font-extrabold uppercase tracking-wide block">Debit (Masuk)</span>
                     <span className="text-xs font-bold text-emerald-800 block mt-1">
-                      {formatRupiah(filteredData.stats.cashIn)}
+                      <Rupiah value={filteredData.stats.cashIn} classNameRp="text-[0.8em] opacity-70 font-normal" />
                     </span>
                   </div>
                   <div className="bg-rose-50 rounded-xl p-3 border border-rose-100 text-center">
                     <span className="text-[9px] text-rose-600 font-extrabold uppercase tracking-wide block">Kredit (Keluar)</span>
                     <span className="text-xs font-bold text-rose-800 block mt-1">
-                      {formatRupiah(filteredData.stats.cashOut)}
+                      <Rupiah value={filteredData.stats.cashOut} classNameRp="text-[0.8em] opacity-70 font-normal" />
                     </span>
                   </div>
-                  <div className="bg-amber-50 rounded-xl p-3 border border-amber-100 text-center">
+                  <div className="bg-amber-50 rounded-xl p-3 border border-[#b68c5b]/20 text-center">
                     <span className="text-[9px] text-[#b68c5b] font-extrabold uppercase tracking-wide block">Bersih (Net)</span>
-                    <span className="text-xs font-bold text-amber-800 block mt-1">
-                      {formatRupiah(filteredData.stats.netCash)}
+                    <span className="text-xs font-bold text-amber-80 block mt-1">
+                      <Rupiah value={filteredData.stats.netCash} classNameRp="text-[0.8em] opacity-70 font-normal" />
                     </span>
                   </div>
                 </div>
@@ -712,9 +713,13 @@ export function ReportModal({ isOpen, onClose }: ReportModalProps) {
                         </div>
                         <span className="font-bold text-[#b68c5b] text-right font-serif">
                           {t.type === 'trade_in' ? (
-                            (t.price - t.sellPrice) >= 0 ? `+ ${formatRupiah(t.price - t.sellPrice)}` : `- ${formatRupiah(Math.abs(t.price - t.sellPrice))}`
+                            (t.price - t.sellPrice) >= 0 ? (
+                              <span>+ <Rupiah value={t.price - t.sellPrice} classNameRp="text-[0.8em] opacity-70 font-normal" /></span>
+                            ) : (
+                              <span>- <Rupiah value={Math.abs(t.price - t.sellPrice)} classNameRp="text-[0.8em] opacity-70 font-normal" /></span>
+                            )
                           ) : (
-                            formatRupiah(t.price || 0)
+                            <Rupiah value={t.price || 0} classNameRp="text-[0.8em] opacity-70 font-normal" />
                           )}
                         </span>
                       </div>

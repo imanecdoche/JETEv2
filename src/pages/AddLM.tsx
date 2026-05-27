@@ -3,6 +3,8 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { ChevronLeft, Plus, X, Trash2 } from 'lucide-react';
 import { useStorage } from '../contexts/StorageContext';
 import { useDialog } from '../contexts/DialogContext';
+import BrandLogo from '../components/BrandLogo';
+import SuccessOverlay from '../components/SuccessOverlay';
 
 export default function AddLM() {
   const navigate = useNavigate();
@@ -17,6 +19,22 @@ export default function AddLM() {
 
   const [items, setItems] = useState<any[]>([]);
 
+  const [successData, setSuccessData] = useState<{
+    isOpen: boolean;
+    type: 'sell' | 'terima';
+    customerName: string;
+    totalGram: number;
+    totalPrice: number;
+    newId: string | undefined;
+  }>({
+    isOpen: false,
+    type: 'terima',
+    customerName: '',
+    totalGram: 0,
+    totalPrice: 0,
+    newId: undefined
+  });
+
   useEffect(() => {
     if (id) {
       const load = async () => {
@@ -26,17 +44,20 @@ export default function AddLM() {
           setCustomerName(trx.customerName);
           setCustomerPhone(trx.customerPhone || '');
           setCustomerNik(trx.customerNik || '');
-          setItems(trx.items || []);
+          setItems((trx.items || []).map((item: any, idx: number) => ({
+            ...item,
+            id: item.id || `edit-item-${idx}-${Date.now()}-${Math.random()}`
+          })));
         }
       };
       load();
     } else {
-      setItems([{ id: Date.now(), brand: 'Antam', weight: '', year: '', price: '', lmCode: '', notes: '' }]);
+      setItems([{ id: `new-item-initial-${Date.now()}-${Math.random()}`, brand: 'Antam', weight: '', year: '', price: '', lmCode: '', notes: '' }]);
     }
   }, [id]);
 
   const addItem = () => {
-    setItems(prev => [...prev, { id: Date.now(), brand: 'Antam', weight: '', year: '', price: '', lmCode: '', notes: '' }]);
+    setItems(prev => [...prev, { id: `new-item-added-${Date.now()}-${Math.random()}`, brand: 'Antam', weight: '', year: '', price: '', lmCode: '', notes: '' }]);
   };
 
   const removeItem = (index: number) => {
@@ -95,9 +116,19 @@ export default function AddLM() {
       }
     }
 
-    await alert({ message: 'Transaksi berhasil disimpan!' });
+    setSuccessData({
+      isOpen: true,
+      type,
+      customerName,
+      totalGram,
+      totalPrice,
+      newId
+    });
+  };
 
-    navigate('/lm', { state: { highlightedId: newId } });
+  const handleSuccessClose = () => {
+    setSuccessData(prev => ({ ...prev, isOpen: false }));
+    navigate('/lm', { state: { highlightedId: successData.newId } });
   };
 
   return (
@@ -179,7 +210,7 @@ export default function AddLM() {
           </div>
 
           {items.map((item, index) => (
-            <div key={item.id} className="bg-white rounded-[24px] p-5 shadow-sm border border-gray-100 space-y-4 relative">
+            <div key={item.id || `item-fallback-${index}`} className="bg-white rounded-[24px] p-5 shadow-sm border border-gray-100 space-y-4 relative">
               {items.length > 1 && (
                 <button
                   onClick={() => removeItem(index)}
@@ -197,19 +228,61 @@ export default function AddLM() {
               </div>
 
               <div>
-                <label className="block text-xs text-gray-500 mb-1 ml-1">Brand</label>
-                <select
-                  value={item.brand}
-                  onChange={e => updateItem(index, 'brand', e.target.value)}
-                  className="w-full bg-gray-50 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-[#b68c5b]/20"
-                >
-                  <option value="Antam">Antam</option>
-                  <option value="UBS">UBS</option>
-                  <option value="Retro">Retro</option>
-                  <option value="Microgold Antam">Microgold Antam</option>
-                  <option value="Microgold UBS">Microgold UBS</option>
-                  <option value="Custom">Custom</option>
-                </select>
+                <label className="block text-xs font-semibold text-gray-500 mb-2 ml-1">Brand Logam Mulia</label>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-3">
+                  {[
+                    { id: 'Antam', title: 'Antam' },
+                    { id: 'UBS', title: 'UBS' },
+                    { id: 'Retro', title: 'Retro' },
+                    { id: 'Microgold Antam', title: 'Antam Micro' },
+                    { id: 'Microgold UBS', title: 'UBS Micro' },
+                    { id: 'Custom', title: 'Kustom' },
+                  ].map((opt) => {
+                    const isSelected = item.brand === opt.id || (opt.id === 'Custom' && !['Antam', 'UBS', 'Retro', 'Microgold Antam', 'Microgold UBS'].includes(item.brand));
+                    return (
+                      <button
+                        key={opt.id}
+                        type="button"
+                        onClick={() => {
+                          if (opt.id === 'Custom') {
+                            updateItem(index, 'brand', 'Kustom');
+                          } else {
+                            updateItem(index, 'brand', opt.id);
+                          }
+                        }}
+                        className={`flex flex-col items-center justify-center p-3 rounded-2xl border text-center transition-all min-h-[82px] active:scale-95 duration-200 ${
+                          isSelected
+                            ? 'border-[#b68c5b] bg-[#b68c5b]/5 ring-2 ring-[#b68c5b]/10 shadow-sm'
+                            : 'border-gray-100 bg-gray-50/50 hover:bg-gray-50 hover:border-gray-200'
+                        }`}
+                      >
+                        <div className="h-8 flex items-center justify-center mb-1">
+                          {['Antam', 'UBS', 'Microgold Antam', 'Microgold UBS'].includes(opt.id) ? (
+                            <BrandLogo brand={opt.id === 'Microgold Antam' ? 'Antam' : opt.id === 'Microgold UBS' ? 'UBS' : opt.id} className="max-h-7 max-w-full object-contain" showFallbackText={false} />
+                          ) : (
+                            <span className="text-sm font-bold text-gray-400">
+                              {opt.id === 'Custom' ? '✨' : '🏛️'}
+                            </span>
+                          )}
+                        </div>
+                        <span className="text-xs font-bold text-gray-700">{opt.title}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {(!['Antam', 'UBS', 'Retro', 'Microgold Antam', 'Microgold UBS'].includes(item.brand)) && (
+                  <div className="animate-fade-in mt-2">
+                    <label className="block text-[11px] text-gray-400 mb-1 ml-1 font-medium">Nama Brand Kustom</label>
+                    <input
+                      type="text"
+                      value={item.brand === 'Kustom' ? '' : item.brand}
+                      onChange={e => updateItem(index, 'brand', e.target.value || 'Kustom')}
+                      placeholder="Masukkan nama brand baru"
+                      className="w-full bg-gray-50 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-[#b68c5b]/20"
+                    />
+                  </div>
+                )}
               </div>
 
               <div className="grid grid-cols-2 gap-3">
@@ -293,6 +366,15 @@ export default function AddLM() {
           Simpan Transaksi LM
         </button>
       </div>
+
+      <SuccessOverlay
+        isOpen={successData.isOpen}
+        onClose={handleSuccessClose}
+        type={successData.type}
+        customerName={successData.customerName}
+        totalGram={successData.totalGram}
+        totalPrice={successData.totalPrice}
+      />
 
     </div>
   );

@@ -7,7 +7,29 @@
       "properties": {
         "name": { "type": "string" },
         "active": { "type": "boolean" },
-        "role": { "type": "string" }
+        "role": { "type": "string" },
+        "email": { "type": "string" },
+        "phone": { "type": "string" },
+        "photoUrl": { "type": "string" },
+        "dob": { "type": "string" },
+        "gender": { "type": "string" },
+        "address": { "type": "string" },
+        "emergencyContact": { "type": "string" },
+        "identityNo": { "type": "string" },
+        "npwp": { "type": "string" },
+        "targets": {
+          "type": "object",
+          "properties": {
+            "daily": { "type": "number" },
+            "weekly": { "type": "number" },
+            "monthly": { "type": "number" }
+          },
+          "required": ["daily", "weekly", "monthly"]
+        },
+        "language": { "type": "string" },
+        "adaptMode": { "type": "string" },
+        "sessionActiveId": { "type": "string" },
+        "sessionLastActive": { "type": "number" }
       },
       "required": ["name", "active", "role"]
     },

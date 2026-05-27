@@ -6,6 +6,7 @@ import { useLanguage } from '../contexts/LanguageContext';
 import { useStorage } from '../contexts/StorageContext';
 import { HeaderClock } from '../components/HeaderClock';
 import { LoadingScreen } from '../components/LoadingScreen';
+import Rupiah from '../components/Rupiah';
 import { motion, AnimatePresence } from 'motion/react';
 import { Target, TrendingUp, Trophy, Flame, Zap } from 'lucide-react';
 
@@ -13,6 +14,7 @@ const CATEGORIES = [
   { id: 'sell', label: 'cat_sell', color: 'bg-emerald-50 text-emerald-700' },
   { id: 'buyback', label: 'cat_buyback', color: 'bg-rose-50 text-rose-700' },
   { id: 'trade_in', label: 'cat_trade_in', color: 'bg-blue-50 text-blue-700' },
+  { id: 'lm', label: 'cat_lm', color: 'bg-yellow-50 text-amber-800 border-amber-200' },
   { id: 'reviews', label: 'cat_reviews', color: 'bg-purple-50 text-purple-700' },
   { id: 'services', label: 'cat_services', color: 'bg-amber-50 text-amber-700' },
   { id: 'cnn', label: 'cat_cnn', color: 'bg-slate-50 text-slate-700' },
@@ -271,7 +273,7 @@ const MultiLayerProgressBar: React.FC<ProgressBarProps> = ({
 export default function Dashboard() {
   const { currentUser } = useApp();
   const { t } = useLanguage();
-  const { transactions: allTransactions, transactionSummaries: allSummaries, appTargets, loading } = useStorage();
+  const { transactions: allTransactions, transactionSummaries: allSummaries, lmTransactions, appTargets, loading } = useStorage();
   const [dailyMode, setDailyMode] = useState<'static' | 'adaptive'>('static');
   const [currentTime, setCurrentTime] = useState(new Date());
 
@@ -404,16 +406,23 @@ export default function Dashboard() {
       .sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
   }, [allSummaries, currentUser]);
 
+  const myLms = useMemo(() => {
+    if (!currentUser) return [];
+    return lmTransactions
+      .filter(t => !t.ownerId || t.ownerId === currentUser.id)
+      .sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+  }, [lmTransactions, currentUser]);
+
   const grouped = useMemo(() => {
-    const acc: Record<string, { details: any[], summary?: any }> = {};
+    const acc: Record<string, { details: any[], summary?: any, lmDetails: any[] }> = {};
     transactions.forEach((curr: any) => {
-      if (!acc[curr.date]) acc[curr.date] = { details: [] };
+      if (!acc[curr.date]) acc[curr.date] = { details: [], lmDetails: [] };
       acc[curr.date].details.push(curr);
     });
 
     summaries.forEach((s: any) => {
       const k = s.date;
-      if (!acc[k]) acc[k] = { details: [] };
+      if (!acc[k]) acc[k] = { details: [], lmDetails: [] };
       if (!acc[k].summary) {
         acc[k].summary = s;
       } else {
@@ -431,14 +440,22 @@ export default function Dashboard() {
         };
       }
     });
+
+    myLms.forEach((lm: any) => {
+      const dateStr = format(new Date(lm.timestamp || lm.date || Date.now()), 'yyyy-MM-dd');
+      if (!acc[dateStr]) acc[dateStr] = { details: [], lmDetails: [] };
+      if (!acc[dateStr].lmDetails) acc[dateStr].lmDetails = [];
+      acc[dateStr].lmDetails.push(lm);
+    });
+
     return acc;
-  }, [transactions, summaries]);
+  }, [transactions, summaries, myLms]);
 
   const sortedDates = useMemo(() => Object.keys(grouped).sort((a, b) => b.localeCompare(a)), [grouped]);
 
   const formatRupiah = (num: number) => {
-    if (!num || num === 0) return 'N/A';
-    return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(num);
+    if (num === undefined || num === null) return 'N/A';
+    return <Rupiah value={num} classNameRp="text-[0.8em] opacity-70 font-normal" />;
   };
 
   if (loading) {
@@ -619,6 +636,43 @@ export default function Dashboard() {
                 
                 <div className="grid grid-cols-2 gap-3">
                   {CATEGORIES.map(cat => {
+                    if (cat.id === 'lm') {
+                      const lmTrxs = dateData.lmDetails || [];
+                      const recordCount = lmTrxs.length;
+                      
+                      const totalQty = lmTrxs.reduce((sum: number, t: any) => sum + (t.items?.length || 0), 0);
+                      const totalGrams = lmTrxs.reduce((sum: number, t: any) => sum + (t.totalGram || 0), 0);
+                      const totalPrice = lmTrxs.reduce((sum: number, t: any) => sum + (t.totalPrice || 0), 0);
+
+                      return (
+                        <NavLink 
+                          key={cat.id} 
+                          to="/lm"
+                          className={`p-4 rounded-3xl overflow-hidden relative shadow-sm border border-white/50 transition-transform active:scale-95 flex flex-col justify-between ${cat.color} min-h-[120px]`}
+                        >
+                          <h3 className="font-medium text-sm mb-1 z-10 relative opacity-90 uppercase tracking-widest">{t(cat.label)}</h3>
+                          <div className="z-10 relative mt-auto">
+                            <p className="text-4xl font-serif font-medium mb-2 leading-none">
+                              {recordCount} <span className="text-xs font-sans tracking-widest uppercase opacity-75 inline-block -ml-1">TRX</span>
+                            </p>
+                            <div className="flex gap-2 text-[10px] opacity-75 font-bold tracking-wide uppercase border-t border-current/10 pt-2 flex-wrap">
+                              {recordCount > 0 ? (
+                                <>
+                                  <span>{totalQty} {t('items')}</span>
+                                  <span>&bull;</span>
+                                  <span>{totalGrams.toFixed(2)}g</span>
+                                  <span>&bull;</span>
+                                  <span>{formatRupiah(totalPrice)}</span>
+                                </>
+                              ) : (
+                                <span className="flex items-center gap-1">0 {t('items')} &bull; 0.00g &bull; <Rupiah value={0} classNameRp="text-[0.8em] opacity-70 font-normal" /></span>
+                              )}
+                            </div>
+                          </div>
+                        </NavLink>
+                      );
+                    }
+
                     const catTrxs = trxs.filter((t: any) => t.type === cat.id);
                     let recordCount = catTrxs.length;
                     if (summaryData?.categories?.[cat.id]) {
@@ -666,7 +720,7 @@ export default function Dashboard() {
                             ) : summaryData?.categories?.[cat.id] > 0 ? (
                              <span>N/A</span>
                             ) : (
-                              <span>0 {t('items')} &bull; 0.00g &bull; Rp 0</span>
+                               <span className="flex items-center gap-1">0 {t('items')} &bull; 0.00g &bull; <Rupiah value={0} classNameRp="text-[0.8em] opacity-70 font-normal" /></span>
                             )}
                           </div>
                         </div>

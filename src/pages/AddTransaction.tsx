@@ -6,6 +6,7 @@ import { Check, X, Save, Settings2, Minus, Plus } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useStorage } from '../contexts/StorageContext';
 import { Modal } from '../components/Modal';
+import Rupiah, { formatRupiahString } from '../components/Rupiah';
 
 interface ItemDetail {
   weight: string;
@@ -415,7 +416,7 @@ export default function AddTransaction() {
             </div>
             <div>
               <label className="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-2 ml-1">Total Price</label>
-              <input type="text" readOnly value={isSell ? formData.sellPrice : formData.price} placeholder="0" className="w-full bg-gray-100 rounded-2xl px-5 py-4 text-lg font-medium text-gray-500 outline-none" required />
+              <input type="text" readOnly value={formatRupiahString(parseFloat(String(isSell ? formData.sellPrice : formData.price).replace(/\D/g, '')) || 0)} placeholder="0" className="w-full bg-gray-100 rounded-2xl px-5 py-4 text-lg font-medium text-gray-500 outline-none" required />
             </div>
           </div>
         </div>
@@ -505,10 +506,7 @@ export default function AddTransaction() {
                 Calculated Price
               </label>
               <div className="w-full bg-gray-100 border border-gray-200/50 rounded-xl px-4 py-3 text-lg font-bold text-gray-800 flex justify-between items-center">
-                <span className="text-sm font-normal text-gray-400 text-left font-sans">Rp</span>
-                <span className="font-serif text-[#b68c5b]">
-                  {item.price || '0'}
-                </span>
+                <Rupiah value={parseFloat(String(item.price).replace(/\D/g, '')) || 0} classNameValue="text-[#b68c5b]" classNameRp="text-[0.8em] opacity-70 font-normal" />
               </div>
             </div>
           </div>
@@ -521,7 +519,7 @@ export default function AddTransaction() {
              </div>
              <div>
                <label className="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-2 ml-1">Total Price</label>
-               <input type="text" readOnly value={isSell ? formData.sellPrice : formData.price} placeholder="0" className="w-full bg-gray-100/50 rounded-2xl px-5 py-4 text-lg font-medium text-[#b68c5b]/70 outline-none" required />
+               <input type="text" readOnly value={formatRupiahString(parseFloat(String(isSell ? formData.sellPrice : formData.price).replace(/\D/g, '')) || 0)} placeholder="0" className="w-full bg-gray-100/50 rounded-2xl px-5 py-4 text-lg font-medium text-[#b68c5b]/70 outline-none" required />
              </div>
           </div>
         )}
@@ -627,7 +625,7 @@ export default function AddTransaction() {
 
                  <div className="text-right text-xs pt-1 border-t border-gray-100/50 flex justify-between items-center text-gray-500">
                    <span>Calculated:</span>
-                   <span className="font-serif font-bold text-[#b68c5b]">Rp {item.price || '0'}</span>
+                   <span className="font-serif font-bold text-[#b68c5b]"><Rupiah value={parseFloat(String(item.price).replace(/\D/g, '')) || 0} classNameValue="font-bold text-[#b68c5b]" classNameRp="text-[0.8em] opacity-70 font-normal" /></span>
                  </div>
              </div>
           ))}
@@ -640,7 +638,7 @@ export default function AddTransaction() {
             </div>
             <div className="text-right">
                <div className="text-xs text-gray-400 font-bold uppercase tracking-wider">Total Price</div>
-               <div className="font-serif text-xl text-[#b68c5b]">{isSell ? formData.sellPrice : formData.price || '0'}</div>
+               <div className="font-serif text-xl text-[#b68c5b]"><Rupiah value={parseFloat(String(isSell ? formData.sellPrice : formData.price).replace(/\D/g, '')) || 0} classNameRp="text-[0.8em] opacity-70 font-normal" /></div>
             </div>
           </div>
           <button type="button" onClick={() => isSell ? setIsSellItemsModalOpen(false) : setIsItemsModalOpen(false)} className="w-full bg-[#2c2a29] text-white py-4 rounded-xl font-medium shadow-sm hover:bg-black transition-colors">
@@ -826,9 +824,7 @@ export default function AddTransaction() {
                         <span className="text-sm font-medium text-gray-600 mb-1">
                           {diff >= 0 ? "Customer Adds" : "Customer Receives Change"}
                         </span>
-                        <span className="text-3xl font-serif text-[#b68c5b]">
-                          Rp {Math.abs(diff).toLocaleString('id-ID')}
-                        </span>
+                        <Rupiah value={Math.abs(diff)} className="text-3xl font-serif text-[#b68c5b]" classNameRp="text-[0.8em] opacity-70 font-normal mr-1" />
                       </div>
                     );
                   })()}

@@ -6,6 +6,7 @@ import { ChevronLeft, Trash2, Edit3 } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useStorage } from '../contexts/StorageContext';
 import { LoadingScreen } from '../components/LoadingScreen';
+import Rupiah from '../components/Rupiah';
 
 const CATEGORIES: Record<string, { label: string, color: string }> = {
   sell: { label: 'cat_sell', color: 'bg-emerald-50 text-emerald-700 border-emerald-100' },
@@ -56,7 +57,7 @@ export default function CategoryDetail() {
 
   const formatRupiah = (num: number) => {
     if (!num || num === 0) return 'N/A';
-    return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(num);
+    return <Rupiah value={num} classNameRp="text-[0.8em] opacity-70 font-normal" />;
   };
 
   if (loading) {
@@ -120,7 +121,9 @@ export default function CategoryDetail() {
                       </div>
                       <div className="flex justify-between items-center pt-1 text-[#b68c5b]">
                         <span>{diff >= 0 ? "Cust Adds" : "Cust Rcv"}</span>
-                        <span className="text-lg font-serif">Rp {Math.abs(diff).toLocaleString('id-ID')}</span>
+                        <span className="text-lg font-serif">
+                          <Rupiah value={Math.abs(diff)} classNameRp="text-[0.8em] opacity-70 font-normal" />
+                        </span>
                       </div>
                     </div>
 

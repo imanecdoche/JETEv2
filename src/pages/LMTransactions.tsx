@@ -4,6 +4,8 @@ import { Search, Plus, Filter, Gem, Trash2, Edit2 } from 'lucide-react';
 import { useStorage } from '../contexts/StorageContext';
 import { useDialog } from '../contexts/DialogContext';
 import { format, parseISO } from 'date-fns';
+import BrandLogo from '../components/BrandLogo';
+import Rupiah from '../components/Rupiah';
 
 export default function LMTransactions() {
   const navigate = useNavigate();
@@ -71,7 +73,7 @@ export default function LMTransactions() {
   };
 
   const formatRp = (num: number) => {
-    return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(num);
+    return <Rupiah value={num} classNameRp="text-[0.8em] opacity-70 font-normal" />;
   };
 
   return (
@@ -182,13 +184,18 @@ export default function LMTransactions() {
                   </div>
                   <div className="divide-y divide-gray-50">
                     {t.items?.map((item: any, i: number) => (
-                      <div key={i} className="flex justify-between items-center text-xs py-2 px-4 bg-white">
-                        <div className="flex flex-col">
-                          <span className="font-medium text-gray-700">{item.brand} <span className="text-gray-400 text-[10px] font-normal ml-1">({item.year || '-'})</span></span>
-                          {item.lmCode && <span className="text-[10px] text-gray-400 uppercase tracking-wider">{item.lmCode}</span>}
+                      <div key={i} className="flex justify-between items-center text-xs py-3 px-4 bg-white">
+                        <div className="flex items-center gap-3">
+                          <div className="w-12 h-6 flex items-center justify-center bg-gray-50/50 rounded-lg p-1 border border-gray-100 overflow-hidden flex-shrink-0">
+                            <BrandLogo brand={item.brand} className="max-h-5 max-w-full object-contain" showFallbackText={false} />
+                          </div>
+                          <div className="flex flex-col">
+                            <span className="font-semibold text-gray-700">{item.brand} <span className="text-gray-400 text-[10.5px] font-normal ml-0.5">({item.year || '-'})</span></span>
+                            {item.lmCode && <span className="text-[10px] text-gray-400 uppercase tracking-wider font-mono mt-0.5">{item.lmCode}</span>}
+                          </div>
                         </div>
                         <div className="text-right flex flex-col items-end">
-                           <span className="font-medium text-gray-600">{item.weight}g</span>
+                           <span className="font-semibold text-gray-800 text-sm">{item.weight}g</span>
                            <span className="text-gray-400 font-mono text-[10px]">{formatRp(item.price)}</span>
                         </div>
                       </div>

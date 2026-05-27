@@ -407,13 +407,16 @@ export function StorageProvider({ children }: { children: React.ReactNode }) {
   };
 
   const updateAppTargets = async (targets: { daily: number; weekly: number; monthly: number }) => {
-    if (mode === 'local') {
-      localStorage.setItem('jeweltrack_local_targets', JSON.stringify(targets));
-      setAppTargets(targets);
-    } else if (firebaseUser) {
+    localStorage.setItem('jeweltrack_local_targets', JSON.stringify(targets));
+    setAppTargets(targets);
+    
+    if (firebaseUser) {
       const uid = firebaseUser.uid;
       try {
         await setDoc(doc(db, 'settings', `app_targets_${uid}`), { ...targets, ownerId: uid }, { merge: true });
+        
+        // Also save on user profile document directly
+        await setDoc(doc(db, 'users', uid), { targets }, { merge: true });
       } catch (err) {
         handleFirestoreError(err, OperationType.WRITE, `settings/app_targets_${uid}`);
       }
